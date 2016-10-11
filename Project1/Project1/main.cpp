@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
 		return 1;
 	}*/
 	//int iPlayRounds = atoi(argv[1]);
-	int iPlayRounds = 1000;
+	int iPlayRounds = 800000;
 	// create and initialize AI
 	Fib2584Ai ai;
 	ai.initialize(argc, argv);
@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
 	// play each round
 	
 	for(int i = 0;i < iPlayRounds;i++) {
-		if( i % 100 == 0 )
+		if( i % (iPlayRounds/10) == 0 )
 			printf(" %d \n", i);
 
 		GameBoard gameBoard;
@@ -40,8 +40,6 @@ int main(int argc, char* argv[])
 			GameBoard originalBoard = gameBoard;
 
 			iScore += gameBoard.move(moveDirection);
-			
-			
 
 			if(originalBoard == gameBoard){
 				

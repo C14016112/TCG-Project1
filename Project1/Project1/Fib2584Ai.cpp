@@ -10,187 +10,124 @@ void Fib2584Ai::initialize(int argc, char* argv[])
 {
 	ReadWeightTable();
 	srand(time(NULL));
-	int emptyboard[4][4] = {};
-	emptygameboard.setBoard(TransformArrayBoardToBitBoard(emptyboard));
-	lastboard_moved = emptygameboard;
+	for (int i = 0 ; i< 4 ; i++){
+		for (int j = 0 ; j< 4 ; j++){
+			lastboard_moved[i][j] = 0;
+		}
+	}
+	move.MakeTable();
 }
 
 
 MoveDirection Fib2584Ai::generateMove(int board[4][4])
 {
-	BitBoard bitboard = TransformArrayBoardToBitBoard(board);
-	
-	Board gameboard;
-	gameboard.setBoard(bitboard);
+	for (int i = 0 ;i<4 ; i++){
+		for (int j = 0 ; j< 4 ; j++){
+			for (int k = 0 ; k<32 ; k++){
+				if(board[i][j] == GameBoard::fibonacci_[k]){
+					board[i][j] = k;
+				}
+			}
+		}
+	}
 
-	MoveDirection currentaction = FindBestDirection(gameboard);
-	if((lastboard_moved == emptygameboard) == false)
-		LearnEvaluation(gameboard, currentaction);
+	MoveDirection currentaction = FindBestDirection(board);
+	int tmpaward;
+	move.Move((int)currentaction, board, tmpaward);
+	if(isEmpty(lastboard_moved) == false){
+		Learn_Evaluation(lastboard_moved, board, tmpaward);
+	}
+
+	for (int i = 0 ; i< 4 ; i++){
+		for (int j = 0 ; j< 4 ; j++){
+			lastboard_moved[i][j] = board[i][j];
+		}
+	}
 	
-	gameboard.move(currentaction);
-	lastboard_moved = gameboard;
 	return currentaction;
 }
 
 void Fib2584Ai::gameOver(int board[4][4], int iScore)
 {
-	lastboard_moved = emptygameboard;
-}
-
-double Fib2584Ai::Evaluate(Board board)
-{
-	int arrayboard[4][4] = {};
-	board.getArrayBoard(arrayboard);
-
-	// transform the number of board into fibonacci number
 	for (int i = 0 ; i< 4 ; i++){
 		for (int j = 0 ; j< 4 ; j++){
-			for (int l = 0 ; l< 32 ; l++){
-				if(arrayboard[i][j] == Board::fibonacci_[l])
-					arrayboard[i][j] = l;
-			}
+			lastboard_moved[i][j] = 0;
 		}
 	}
-	return record1.getScore(arrayboard) + record2.getScore(arrayboard);
+}
+
+double Fib2584Ai::Evaluate(int board[4][4])
+{
+	return record1.getScore(board) + record2.getScore(board);
 
 }
 
-BitBoard Fib2584Ai::TransformArrayBoardToBitBoard(int arrayboard[4][4])
+
+void Fib2584Ai::Learn_Evaluation( int b1_moved[4][4], int b2_moved[4][4], int tmpaward)
 {
 
-	// first, transform the number of array board to order of fibonacci number
-	// example, 89 -> F_10
-	int fibonacciboard[4][4] = {};
-	for (int i = 0 ;i < 4 ; i++){
-		for(int j = 0 ; j< 4 ; j++){
-			for(int l = 0 ; l< 32 ; l++){
-				if(arrayboard[i][j] == Board::fibonacci_[l]){
-					fibonacciboard[i][j] = l;
-				}
-			}
-		}
-	}
-
-
-	/*
-	1   2  3  4
-	5   6  7  8
-	9  10 11 12
-	13 14 15 16
-	1~3 are in left board
-	5~16 are in right board
-	4 is in both boards;
-	*/
-
-	unsigned long long int left_of_bitboard = 0;
-	unsigned long long int right_of_bitboard = 0;
-	unsigned long long int base = 1;
-	for (int i = 3 ; i> 0 ; i--){
-		for (int j = 3 ; j >= 0 ; j--){
-			right_of_bitboard += base * fibonacciboard[i][j];
-			base *= 32;
-		}
-	}
-	if(arrayboard[0][3] > 15){
-		right_of_bitboard += base * ( fibonacciboard[0][3] - 16 );
-		left_of_bitboard += 1;
-	}
-	else{
-		right_of_bitboard += base * fibonacciboard[0][3];
-	}
-
-	base = 2;
-	for (int i = 2 ; i >= 0  ; i--){
-		left_of_bitboard += base * fibonacciboard[0][i];
-		base = base * 32;
-	}
-	
-	BitBoard bitboard(left_of_bitboard, right_of_bitboard);
-
-
-	return bitboard;
-}
-
-void Fib2584Ai::LearnEvaluation(Board b2, MoveDirection currentaction)
-{
-	int b1_moved_array[4][4];
-	int b2_moved_array[4][4];
-	Board b1_moved;
-	Board b2_moved;
-	b1_moved = lastboard_moved;
-	MoveDirection current_action = currentaction;
-	/*
-	COMPUTE AFTERSTATE( s'', a_next)
-	*/
-	int tmpaward = 0; // r_next
-	b2_moved = b2;
-	tmpaward = b2_moved.move(current_action);
-
-	b1_moved.getArrayBoard(b1_moved_array);
-	b2_moved.getArrayBoard(b2_moved_array);
-	for (int i = 0 ;i < 4 ; i++){
-		for(int j = 0 ; j< 4 ; j++){
-			for(int l = 0 ; l< 32 ; l++){
-				if(b1_moved_array[i][j] == Board::fibonacci_[l]){
-					b1_moved_array[i][j] = l;
-				}
-				if(b2_moved_array[i][j] == Board::fibonacci_[l]){
-					b2_moved_array[i][j] = l;
-				}
-			}
-		}
-	}
-	
 	double next_value = 0;
 	double now_value = 0;
 	double delta = 0;
-	now_value = record1.getScore(b1_moved_array) + record2.getScore(b1_moved_array);
-	if (b2.countEmptyTile() == 0){
+	now_value = record1.getScore(b1_moved) + record2.getScore(b1_moved);
+	if (isFull(b2_moved) == true){
 		delta = LEARNING_RATE * now_value * -1;
 	}
 	else{
-		next_value = record1.getScore(b2_moved_array) + record2.getScore(b2_moved_array);
+		next_value = record1.getScore(b2_moved) + record2.getScore(b2_moved);
 		delta = LEARNING_RATE * ((double)tmpaward + next_value - now_value);
 	}
 		
 	for (int i = 0; i < 8; i++){
-		double new_value1 = record1.get_OneFeature_Score(b1_moved_array, i) + delta ;
-		record1.set_OneFeature_Score(b1_moved_array, i, new_value1);
+		double new_value1 = record1.get_OneFeature_Score(b1_moved, i) + delta ;
+		record1.set_OneFeature_Score(b1_moved, i, new_value1);
 
-		new_value1 = 0;
-		double new_value2 = record2.get_OneFeature_Score(b1_moved_array, i) + delta;
-		record2.set_OneFeature_Score(b1_moved_array, i, new_value2);
-
+		double new_value2 = record2.get_OneFeature_Score(b1_moved, i) + delta;
+		record2.set_OneFeature_Score(b1_moved, i, new_value2);
 	}
 }
 
-MoveDirection Fib2584Ai::FindBestDirection(Board board)
+MoveDirection Fib2584Ai::FindBestDirection(int board[4][4])
 {
 	int nextaction = 0;
 	double score[4] = {};
-	
-	for (int i = 0 ; i< 4 ; i++){
-		Board newboard;
-		newboard = board;
-		newboard.move(static_cast<MoveDirection>(i));
-		score[i] = Evaluate(newboard);
+	int tmpboard[4][4][4] = {};
+
+	for (int i = 0 ; i<4 ; i++){
+		int moveboard[4][4] = {};
+		for (int j = 0 ; j<4 ; j++){
+			for (int k = 0 ;k<4 ;k++){
+				moveboard[j][k] = board[j][k];
+			}
+		}
+
+		int tmpaward = 0;
+		move.Move(i, moveboard, tmpaward);
+		score[i] = Evaluate(moveboard) + tmpaward;
 		
 		if(score[i] > score[nextaction]){
 			nextaction = i;
 		}
+		for (int j = 0 ; j<4 ; j++){
+			for (int k = 0 ;k<4 ;k++){
+				tmpboard[i][j][k] = moveboard[j][k];
+			}
+		}
 	}
 
-	MoveDirection nextMove;
+	bool isSame = true;
 
-	Board originalboard = board;
-	board.move(static_cast<MoveDirection>(nextaction));
-	if(originalboard == board){
-		nextMove = static_cast<MoveDirection>(rand() % 4);
+	
+	for (int i = 0 ; i< 4 ; i++){
+		for (int j = 0 ; j<4 ; j++){
+			if(tmpboard[nextaction][i][j] != board[i][j]){
+				isSame = false;
+				return static_cast<MoveDirection>(nextaction);
+			}
+		}
 	}
-	else{
-		nextMove = static_cast<MoveDirection>(nextaction);
-	}
-	return nextMove;
+	
+	return static_cast<MoveDirection>(rand() % 4);
 }
 
 void Fib2584Ai::ReadWeightTable()
@@ -261,6 +198,27 @@ void Fib2584Ai::WriteWeightTable()
 	fout2.close();
 }
 
+bool Fib2584Ai::isFull(int board[4][4])
+{
+	for (int i = 0 ;i < 4 ; i++){
+		for (int j = 0 ; j< 4 ; j++){
+			if(board[i][j] == 0)
+				return false;
+		}
+	}
+	return true;
+}
+
+bool Fib2584Ai::isEmpty(int board[4][4])
+{
+	for (int i = 0 ;i < 4 ; i++){
+		for (int j = 0 ; j< 4 ; j++){
+			if(board[i][j] != 0)
+				return false;
+		}
+	}
+	return true;
+}
 
 /**********************************
 You can implement any additional functions

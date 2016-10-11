@@ -3,8 +3,8 @@
 
 #include <cstdlib>
 #include <ctime>
-#include "MoveDirection.h"
-#include "Board.h"
+#include "GameBoard.h"
+#include "MakeMoveTable.h"
 #include "Record_4tile_Inside.h"
 #include "Record_4tile_Outside.h"
 #include <iostream>
@@ -25,17 +25,18 @@ public:
 	or define any variables you may need.
 	**********************************/
 private:
-	double Evaluate(Board board);
-	MoveDirection FindBestDirection(Board);
-	void LearnEvaluation(Board b1, MoveDirection currentaction);
-	BitBoard TransformArrayBoardToBitBoard(int [4][4]);
+	double Evaluate(int board[4][4]);
+	MoveDirection FindBestDirection(int board[4][4]);
+	void Learn_Evaluation( int b1_moved[4][4], int b2_moved[4][4], int tmpaward);
 	void ReadWeightTable();
+	bool isFull(int board[4][4]);
+	bool isEmpty(int board[4][4]);
 private:
 	double LEARNING_RATE;
 	Record_4tile_Inside record1;
 	Record_4tile_Outside record2;
-	Board emptygameboard;
-	Board lastboard_moved;
+	int lastboard_moved[4][4];
+	MakeMoveTable move;
 };
 
 #endif
