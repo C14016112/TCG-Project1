@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
 		return 1;
 	}*/
 	//int iPlayRounds = atoi(argv[1]);
-	int iPlayRounds = 100;
+	int iPlayRounds = 1000;
 	// create and initialize AI
 	Fib2584Ai ai;
 	ai.initialize(argc, argv);
@@ -25,12 +25,16 @@ int main(int argc, char* argv[])
 	// play each round
 	
 	for(int i = 0;i < iPlayRounds;i++) {
+		if( i % 100 == 0 )
+			printf(" %d \n", i);
+
 		GameBoard gameBoard;
 		gameBoard.initialize();
 		int iScore = 0;
 		int arrayBoard[4][4];
 		while(!gameBoard.terminated()) {
 			
+
 			gameBoard.getArrayBoard(arrayBoard);
 			MoveDirection moveDirection = ai.generateMove(arrayBoard);
 			GameBoard originalBoard = gameBoard;
@@ -39,8 +43,14 @@ int main(int argc, char* argv[])
 			
 			
 
-			if(originalBoard == gameBoard)
+			if(originalBoard == gameBoard){
+				
+				if (originalBoard.board_.left_ != gameBoard.board_.left_ || originalBoard.board_.right_!= gameBoard.board_.right_){
+					system("pause");
+					cout << "shit\n\n" ;
+				}
 				continue;
+				}
 			statistic.increaseOneMove();
 
 			gameBoard.addRandomTile();

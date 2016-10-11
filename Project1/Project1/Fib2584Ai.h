@@ -34,9 +34,8 @@ private:
 	double LEARNING_RATE;
 	Record_4tile_Inside record1;
 	Record_4tile_Outside record2;
-	Board lastboard;
 	Board emptygameboard;
-	MoveDirection lastdirection;
+	Board lastboard_moved;
 };
 
 #endif

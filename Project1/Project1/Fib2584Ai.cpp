@@ -12,9 +12,7 @@ void Fib2584Ai::initialize(int argc, char* argv[])
 	srand(time(NULL));
 	int emptyboard[4][4] = {};
 	emptygameboard.setBoard(TransformArrayBoardToBitBoard(emptyboard));
-	lastboard = emptygameboard;
-	lastdirection = static_cast<MoveDirection>(0) ;
-	return;
+	lastboard_moved = emptygameboard;
 }
 
 
@@ -24,22 +22,19 @@ MoveDirection Fib2584Ai::generateMove(int board[4][4])
 	
 	Board gameboard;
 	gameboard.setBoard(bitboard);
+
 	MoveDirection currentaction = FindBestDirection(gameboard);
-	if((lastboard == emptygameboard) == false)
+	if((lastboard_moved == emptygameboard) == false)
 		LearnEvaluation(gameboard, currentaction);
 	
-	lastboard = gameboard;
-	lastdirection = currentaction;
-	return lastdirection;
+	gameboard.move(currentaction);
+	lastboard_moved = gameboard;
+	return currentaction;
 }
 
 void Fib2584Ai::gameOver(int board[4][4], int iScore)
 {
-	int emptyboard[4][4] = {};
-	emptygameboard.setBoard(TransformArrayBoardToBitBoard(emptyboard));
-	lastboard = emptygameboard;
-	lastdirection = static_cast<MoveDirection>(0) ;
-	return;
+	lastboard_moved = emptygameboard;
 }
 
 double Fib2584Ai::Evaluate(Board board)
@@ -57,6 +52,7 @@ double Fib2584Ai::Evaluate(Board board)
 		}
 	}
 	return record1.getScore(arrayboard) + record2.getScore(arrayboard);
+
 }
 
 BitBoard Fib2584Ai::TransformArrayBoardToBitBoard(int arrayboard[4][4])
@@ -97,6 +93,7 @@ BitBoard Fib2584Ai::TransformArrayBoardToBitBoard(int arrayboard[4][4])
 	}
 	if(arrayboard[0][3] > 15){
 		right_of_bitboard += base * ( fibonacciboard[0][3] - 16 );
+		left_of_bitboard += 1;
 	}
 	else{
 		right_of_bitboard += base * fibonacciboard[0][3];
@@ -118,11 +115,9 @@ void Fib2584Ai::LearnEvaluation(Board b2, MoveDirection currentaction)
 {
 	int b1_moved_array[4][4];
 	int b2_moved_array[4][4];
-	Board b1 = lastboard;
 	Board b1_moved;
 	Board b2_moved;
-	b1_moved = b1;
-	b1_moved.move(lastdirection);
+	b1_moved = lastboard_moved;
 	MoveDirection current_action = currentaction;
 	/*
 	COMPUTE AFTERSTATE( s'', a_next)
@@ -167,108 +162,39 @@ void Fib2584Ai::LearnEvaluation(Board b2, MoveDirection currentaction)
 		record2.set_OneFeature_Score(b1_moved_array, i, new_value2);
 
 	}
-	
-
 }
 
 MoveDirection Fib2584Ai::FindBestDirection(Board board)
 {
 	int nextaction = 0;
 	double score[4] = {};
-	Board originalboard = board;
+	
 	for (int i = 0 ; i< 4 ; i++){
 		Board newboard;
 		newboard = board;
 		newboard.move(static_cast<MoveDirection>(i));
 		score[i] = Evaluate(newboard);
-	}
-
-	MoveDirection nextMove;
-
-	for (int i = 0 ; i< 4 ; i++){
+		
 		if(score[i] > score[nextaction]){
 			nextaction = i;
 		}
 	}
 
+	MoveDirection nextMove;
+
+	Board originalboard = board;
 	board.move(static_cast<MoveDirection>(nextaction));
 	if(originalboard == board){
 		nextMove = static_cast<MoveDirection>(rand() % 4);
 	}
 	else{
-
-		//printf("%d \n", gameboard.move(static_cast<MoveDirection>(nextaction)));
 		nextMove = static_cast<MoveDirection>(nextaction);
 	}
-
 	return nextMove;
 }
 
 void Fib2584Ai::ReadWeightTable()
 {
-	/*FILE * score_data;
-	FILE * score_data2;
-	errno_t err;
-	errno_t err2;
-	char name[30] = "WeightTable1.bin";
-	char name2[30] = "WeightTable2.bin";
-
-	if ((err = fopen_s(&score_data, name, "rb")) != 0){
-		printf("The file '%s' was not opened\n", name);
-	}
-	else
-	{
-		printf("The file '%s' was opened\n", name);
-
-		for (int i = 0; i < 32; i++){
-			for (int j = 0; j < 32; j++){
-				for (int k = 0; k < 32; k++){
-					for (int l = 0; l < 32; l++){
-						double value = 0;
-						fscanf_s(score_data, "%lf", &value);
-						int inputindex[4] = {i, j, k, l};
-						record1.setScore(inputindex, value);
-					}
-				}
-			}
-		}
-		if (score_data)
-		{
-			if (fclose(score_data))
-			{
-				printf("The file '%s' was not closed\n", name);
-			}
-		}
-	}
-
-	if ((err2 = fopen_s(&score_data2, name2, "rb")) != 0){
-		printf("The file '%s' was not opened\n", name2);
-	}
-	else
-	{
-		printf("The file '%s' was opened\n", name2);
-
-		for (int i = 0; i < 32; i++){
-			for (int j = 0; j < 32; j++){
-				for (int k = 0; k < 32; k++){
-					for (int l = 0; l < 32; l++){
-						double value = 0;
-						fscanf_s(score_data2, "%lf", &value);
-						int inputindex[4] = {i, j, k, l};
-						record2.setScore(inputindex, value);
-					}
-				}
-			}
-		}
-		if (score_data2)
-		{
-			if (fclose(score_data2))
-			{
-				printf("The file '%s' was not closed\n", name2);
-			}
-		}
-	}*/
-
 	char filename[30] = "WeightTable1.bin";
 	char filename2[30] = "WeightTable2.bin";
 
@@ -302,47 +228,6 @@ void Fib2584Ai::ReadWeightTable()
 }
 void Fib2584Ai::WriteWeightTable()
 {
-	/*FILE * data;
-	FILE * data2;
-	errno_t err;
-	errno_t err2;
-	char name[30] = "WeightTable1.bin";
-	char name2[30] = "WeightTable2.bin";
-
-	if ((err = fopen_s(&data, name, "wb")) != 0)
-		printf("The file '%s' was not opened\n", name);
-	else
-		printf("The file '%s' was opened\n", name);
-
-	if ((err2 = fopen_s(&data2, name2, "wb")) != 0)
-		printf("The file '%s' was not opened\n", name2);
-	else
-		printf("The file '%s' was opened\n", name2);
-
-	for (int i = 0; i < 32; i++){
-		for (int j = 0; j < 32; j++){
-			for (int k = 0; k < 32; k++){
-				for (int l = 0; l < 32; l++){
-					int index[4] = { i, j, k, l };
-					fprintf(data, "%lf \n", record1.getScore(index));
-					fprintf(data2, "%lf \n", record2.getScore(index));
-				}
-			}
-		}
-	}
-
-	if (data)
-	{
-		if (fclose(data))
-		{
-			printf("The file '%s' was not closed\n", name);
-		}
-	}
-	if (data2){
-		if(fclose(data2)){
-			printf("The file '%s' was not closed\n", name2);
-		}
-	}*/
 
 	char filename[30] = "WeightTable1.bin";
 	char filename2[30] = "WeightTable2.bin";
@@ -375,6 +260,8 @@ void Fib2584Ai::WriteWeightTable()
 	fout.close();
 	fout2.close();
 }
+
+
 /**********************************
 You can implement any additional functions
 you may need.

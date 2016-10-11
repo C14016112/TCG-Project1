@@ -116,22 +116,22 @@ BitBoard GameBoard::getColumn( int column )
 {
 	BitBoard tempBoard = board_ >> (column * 5) & BitBoard(0x0001, 0xf0001f0001f0001f);
 	return (tempBoard & BitBoard(0x0001, 0xf000000000000000)) >> 45 |
-		(tempBoard & BitBoard(0x0000, 0x00001f0000000000)) >> 30 |
-		(tempBoard & BitBoard(0x0000, 0x0000000001f00000)) >> 15 |
-		(tempBoard & BitBoard(0x0000, 0x000000000000001f));
+      	   (tempBoard & BitBoard(0x0000, 0x00001f0000000000)) >> 30 |
+      	   (tempBoard & BitBoard(0x0000, 0x0000000001f00000)) >> 15 |
+       	   (tempBoard & BitBoard(0x0000, 0x000000000000001f));
 }
 
 BitBoard GameBoard::restoreRow( BitBoard rowBits, int row )
 {
-	return rowBits << (row * 20);
+  	return rowBits << (row * 20);
 }
 
 BitBoard GameBoard::restoreColumn( BitBoard columnBits, int column )
 {
-	return ((columnBits & BitBoard(0xf8000)) << 45 |
-		(columnBits & BitBoard(0x07c00)) << 30 |
-		(columnBits & BitBoard(0x003e0)) << 15 |
-		(columnBits & BitBoard(0x0001f)) ) << (column * 5);
+  	return ((columnBits & BitBoard(0xf8000)) << 45 |
+            (columnBits & BitBoard(0x07c00)) << 30 |
+            (columnBits & BitBoard(0x003e0)) << 15 |
+            (columnBits & BitBoard(0x0001f)) ) << (column * 5);
 }
 
 int GameBoard::getTile( int row, int column )
@@ -142,15 +142,14 @@ int GameBoard::getTile( int row, int column )
 
 void GameBoard::showBoard()
 {
-	for(int row = 3;row >= 0;row--) {
-		for(int column = 3;column >= 0;column--)
-			cout << dec << getTile(row, column) << "\t";
-		cout << "\n";
-	}
+  	for(int row = 3;row >= 0;row--) {
+   		for(int column = 3;column >= 0;column--)
+      		cout << dec << getTile(row, column) << "\t";
+    	cout << "\n";
+  	}
 }
 
 bool GameBoard::operator==(GameBoard gameBoard)
 {
 	return board_ == gameBoard.board_;
 }
-

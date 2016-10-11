@@ -32,10 +32,11 @@ public:
 	BitBoard& operator|=(const BitBoard& bit_board);
 	BitBoard operator~();
 	void show();
-
-private:
 	unsigned long long left_;
 	unsigned long long right_;
+private:
+	//unsigned long long left_;
+	//unsigned long long right_;
 };
 
 #endif

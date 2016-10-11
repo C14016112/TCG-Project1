@@ -25,7 +25,7 @@ public:
 	int getMaxTile();
 	void showBoard();
 	bool operator==(GameBoard gameBoard);
-	BitBoard getBitBoard(){return board_; };
+	BitBoard board_;
 private:
 	BitBoard getRow(int row);
 	BitBoard getColumn(int column);
@@ -35,7 +35,7 @@ private:
 	int getTile(int row, int column);
 	int getFibonacci(int index);
 private:
-	BitBoard board_;
+	//BitBoard board_;
 };
 
 #endif

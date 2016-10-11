@@ -4,19 +4,19 @@ const BitBoard BitBoard::static_legal_mask = BitBoard(0xffff, 0xffffffffffffffff
 
 BitBoard::BitBoard():
 left_(0),
-	right_(0)
+right_(0)
 {
 }
 
 BitBoard::BitBoard(unsigned long long right):
 left_(0),
-	right_(right)
+right_(right)
 {
 }
 
 BitBoard::BitBoard(unsigned long long left, unsigned long long right):
 left_(left),
-	right_(right)
+right_(right)
 {
 	left_ &= static_legal_mask.left_; 
 }
