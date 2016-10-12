@@ -7,6 +7,7 @@
 #include "MakeMoveTable.h"
 #include "Record_4tile_Inside.h"
 #include "Record_4tile_Outside.h"
+#include "Record_6tile_Rectangle_Outside.h"
 #include <iostream>
 #include <fstream>
 class Fib2584Ai
@@ -35,6 +36,7 @@ private:
 	double LEARNING_RATE;
 	Record_4tile_Inside record1;
 	Record_4tile_Outside record2;
+	Record_6tile_Rectangle_Outside record3;
 	int lastboard_moved[4][4];
 	MakeMoveTable move;
 };

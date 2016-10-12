@@ -14,7 +14,9 @@ int main(int argc, char* argv[])
 		return 1;
 	}*/
 	//int iPlayRounds = atoi(argv[1]);
-	int iPlayRounds = 800000;
+	int iPlayRounds = 1000;
+	double start, end;
+	start = clock();
 	// create and initialize AI
 	Fib2584Ai ai;
 	ai.initialize(argc, argv);
@@ -64,10 +66,13 @@ int main(int argc, char* argv[])
 		statistic.updateMaxTile(gameBoard.getMaxTile());
 	}
 	statistic.setFinishTime();
-
-	ai.WriteWeightTable();
+	if(iPlayRounds > 99999)
+		ai.WriteWeightTable();
 	// output statistic data
 	statistic.show();
+
+	end = clock();
+	printf(" Running time: %f \n", (end - start) / CLOCKS_PER_SEC);
 	system("pause");
 	return 0;
 }

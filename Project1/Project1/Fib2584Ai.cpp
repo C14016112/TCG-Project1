@@ -58,7 +58,7 @@ void Fib2584Ai::gameOver(int board[4][4], int iScore)
 
 double Fib2584Ai::Evaluate(int board[4][4])
 {
-	return record1.getScore(board) + record2.getScore(board);
+	return record1.getScore(board) + record2.getScore(board) + record3.getScore(board);
 
 }
 
@@ -69,12 +69,12 @@ void Fib2584Ai::Learn_Evaluation( int b1_moved[4][4], int b2_moved[4][4], int tm
 	double next_value = 0;
 	double now_value = 0;
 	double delta = 0;
-	now_value = record1.getScore(b1_moved) + record2.getScore(b1_moved);
+	now_value = record1.getScore(b1_moved) + record2.getScore(b1_moved) + record3.getScore(b1_moved);
 	if (isFull(b2_moved) == true){
 		delta = LEARNING_RATE * now_value * -1;
 	}
 	else{
-		next_value = record1.getScore(b2_moved) + record2.getScore(b2_moved);
+		next_value = record1.getScore(b2_moved) + record2.getScore(b2_moved) + record3.getScore(b2_moved);
 		delta = LEARNING_RATE * ((double)tmpaward + next_value - now_value);
 	}
 		
@@ -84,6 +84,9 @@ void Fib2584Ai::Learn_Evaluation( int b1_moved[4][4], int b2_moved[4][4], int tm
 
 		double new_value2 = record2.get_OneFeature_Score(b1_moved, i) + delta;
 		record2.set_OneFeature_Score(b1_moved, i, new_value2);
+
+		double new_value3 = record3.get_OneFeature_Score(b1_moved, i) + delta;
+		record3.set_OneFeature_Score(b1_moved, i, new_value3);
 	}
 }
 
@@ -134,9 +137,10 @@ void Fib2584Ai::ReadWeightTable()
 {
 	char filename[30] = "WeightTable1.bin";
 	char filename2[30] = "WeightTable2.bin";
-
+	char filename3[30] = "WeightTable3.bin";
 	ifstream fin(filename, ios::in | ios::binary );
 	ifstream fin2(filename2, ios::in | ios::binary );
+	ifstream fin3(filename3, ios::in | ios::binary );
 	if( !fin.is_open()){
 		printf("The file '%s' was not open\n", filename);
 		abort();
@@ -144,6 +148,11 @@ void Fib2584Ai::ReadWeightTable()
 
 	if( !fin2.is_open()){
 		printf("The file '%s' was not open\n", filename2);
+		abort();
+	}
+
+	if( !fin3.is_open()){
+		printf("The file '%s' was not open\n", filename3);
 		abort();
 	}
 
@@ -162,14 +171,36 @@ void Fib2584Ai::ReadWeightTable()
 			}
 		}
 	}
+
+	for (int i = 0 ; i<iUpperBound_6tile;i ++){
+		for (int j = 0 ; j<iUpperBound_6tile ; j++){
+			for (int k = 0 ; k<iUpperBound_6tile ; k++){
+				for (int l = 0 ; l<iUpperBound_6tile ; l++){
+					for (int m = 0 ; m < iUpperBound_6tile ; m++){
+						for (int n = 0 ; n < iUpperBound_6tile ; n++){
+							double value = 0 ;
+							fin3.read((char *)&value, sizeof(double));
+							int inputindex[6] = {i, j, k, l, m, n};
+							record3.setScore(inputindex, value);
+						}
+					}
+				}
+			}
+		}
+	}
+	fin.close();
+	fin2.close();
+	fin3.close();
 }
 void Fib2584Ai::WriteWeightTable()
 {
 
 	char filename[30] = "WeightTable1.bin";
 	char filename2[30] = "WeightTable2.bin";
+	char filename3[30] = "WeightTable3.bin";
 	ofstream fout(filename, ios::out | ios::binary);
 	ofstream fout2(filename2, ios::out | ios::binary);
+	ofstream fout3(filename3, ios::out | ios::binary);
 
 	if(!fout.is_open()){
 		printf("The file '%s' was not open\n", filename);
@@ -178,6 +209,11 @@ void Fib2584Ai::WriteWeightTable()
 
 	if(!fout2.is_open()){
 		printf("The file '%s' was not open\n", filename2);
+		abort();
+	}
+	
+	if(!fout3.is_open()){
+		printf("The file '%s' was not open\n", filename3);
 		abort();
 	}
 
@@ -194,8 +230,26 @@ void Fib2584Ai::WriteWeightTable()
 			}
 		}
 	}
+
+	for (int i = 0 ; i<iUpperBound_6tile;i ++){
+		for (int j = 0 ; j<iUpperBound_6tile ; j++){
+			for (int k = 0 ; k<iUpperBound_6tile ; k++){
+				for (int l = 0 ; l<iUpperBound_6tile ; l++){
+					for (int m = 0 ; m < iUpperBound_6tile ; m++){
+						for (int n = 0 ; n < iUpperBound_6tile ; n++){
+							int inputindex[6] = {i, j, k, l, m, n};
+							double value = record3.getScore(inputindex);
+							fout3.write((char *)&value, sizeof(double));
+						}
+					}
+				}
+			}
+		}
+	}
+
 	fout.close();
 	fout2.close();
+	fout3.close();
 }
 
 bool Fib2584Ai::isFull(int board[4][4])

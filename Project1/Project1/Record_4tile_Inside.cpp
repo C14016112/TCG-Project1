@@ -66,5 +66,4 @@ void Record_4tile_Inside::set_OneFeature_Score(int board[4][4], int no, double v
 	int index4 = board[index[no][3] / 4][index[no][3] % 4];
 	int position = index1 + index2*iUpperBound + index3 * iUpperBound * iUpperBound + index4 * iUpperBound * iUpperBound * iUpperBound;
 	Data[position] = value;
-
 }
